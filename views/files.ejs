@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Files</title>
+  <link rel="stylesheet" href="/styles/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>All Files</h1>
+
+    <!-- File Upload Section -->
+    <form id="uploadForm" action="/files/upload" method="POST" enctype="multipart/form-data">
+      <!-- Select File Button -->
+      <input type="file" name="file" id="fileInput" style="display: none;" required />
+      <button type="button" id="selectFileButton">Select File</button>
+
+      <!-- File Info (display after selecting a file) -->
+      <div id="fileInfo" style="display: none;">
+        <p><strong>Selected File:</strong> <span id="fileName"></span></p>
+        <p><strong>Size:</strong> <span id="fileSize"></span> bytes</p>
+      </div>
+
+      <!-- Upload Button (only shows after file is selected) -->
+      <button type="submit" id="uploadButton" style="display: none;">Upload</button>
+    </form>
+
+    <!-- Uploading Spinner -->
+    <div id="uploadingSpinner" style="display: none;">Uploading...</div>
+
+    <!-- Files Table -->
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Size (Bytes)</th>
+          <th>Mime Type</th>
+          <th>Uploaded At</th>
+          <th>Folder</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% files.forEach(file => { %>
+          <tr>
+            <td><%= file.name %></td>
+            <td><%= file.size %></td>
+            <td><%= file.mimeType %></td>
+            <td><%= file.uploadedAt.toISOString().split('T')[0] %></td>
+            <td><%= file.folder ? file.folder.name : 'No Folder' %></td>
+            <td>
+              <a href="<%= file.path %>" target="_blank" class="download-link">↓</a>
+              <form class="dlt-form" action="/files/delete/<%= file.id %>" method="POST" style="display:inline;">
+                <button type="submit" class="delete-btn" title="Delete">❌</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Client-side JavaScript -->
+  <script>
+    const selectFileButton = document.getElementById('selectFileButton');
+    const fileInput = document.getElementById('fileInput');
+    const uploadButton = document.getElementById('uploadButton');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileNameElement = document.getElementById('fileName');
+    const fileSizeElement = document.getElementById('fileSize');
+    const spinner = document.getElementById('uploadingSpinner');
+
+    // Event listener for "Select File" button
+    selectFileButton.addEventListener('click', () => {
+      fileInput.click(); // Trigger the file input dialog
+    });
+
+    // Event listener for file input change (file selected)
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        const selectedFile = fileInput.files[0];
+        fileNameElement.textContent = selectedFile.name;
+        fileSizeElement.textContent = selectedFile.size;
+        fileInfo.style.display = 'block'; // Show the file info
+        uploadButton.style.display = 'inline-block'; // Show the Upload button
+      }
+    });
+
+    // Event listener for form submission (file upload)
+    document.getElementById('uploadForm').addEventListener('submit', (e) => {
+      e.preventDefault(); // Prevent form from submitting normally
+
+      // Show the spinner while uploading
+      spinner.style.display = 'block';
+
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+
+      // Make the request to upload the file
+      fetch('/files/upload', {
+        method: 'POST',
+        body: formData,
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data); // Handle the success
+          spinner.style.display = 'none'; // Hide spinner
+          
+          // Optionally, redirect or show new files
+          window.location.href = '/files'; // Redirect to the file list page
+        })
+        .catch(error => {
+          console.error(error);
+          spinner.style.display = 'none'; // Hide spinner on error
+        });
+    });
+  </script>
+
+  <footer>
+    <p><a href="/">Back to Home</a></p>
+  </footer>
+</body>
+</html>

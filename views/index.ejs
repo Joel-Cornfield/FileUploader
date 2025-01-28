@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Uploader</title>
+  <link rel="stylesheet" href="/styles/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome to File Uploader</h1>
+    <img src="/assets/logo.svg" alt="Logo" class="logo">
+    <% if (currentUser) { %>
+      <div class="greeting">
+        <p>Hello, <%= currentUser.username %>!</p>
+        <a href="/files">View all files</a>
+        <!-- Remove inline style on the form -->
+        <form action="/auth/logout" method="POST" class="logout-form">
+          <button type="submit" class="logout-btn">Logout</button>
+        </form>
+      </div>
+    <% } else { %>
+      <a href="/auth/login">Login</a>
+      <a href="/auth/signup">Sign Up</a>
+    <% } %>
+  </div>
+</body>
+</html>
